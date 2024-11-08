@@ -41,5 +41,4 @@ Tools that will be used:
 -database: PostgreSQL
 
 ## Plan for next milestone
-Create the admin panel for registering vehicles and drivers in the database.
-Create the login and register form for clients.
+Determine the exact specifications. (+ admin panel, login, register form if possible)
