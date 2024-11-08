@@ -19,7 +19,7 @@ update the status of the transportation (start of transportation, destination re
 tracking map in the customer panel.
 
 The cusotmer panel is used to make booking from customers. The customers logins with his email and password (registers if it is the first time,
-and his data is stored in the database under Customer[email, password]). Then he choses the exact pickup and estination address through linking via Google Maps APIs. 
+and his data is stored in the database under Customer[email, password]). Then he choses the exact pickup and destination address through linking via Google Maps APIs. 
 He further choses the type of goods to be transported (furniture, general 
 articles, building materials, pharmaceuticals, food, vehicle equipment, explosive substances...) and in this category that he chose, he
 can order more than 1 package (to allow different features for each package, for example size, weight, quantity). If the product is 
@@ -41,4 +41,4 @@ Tools that will be used:
 -database: PostgreSQL
 
 ## Plan for next milestone
-Determine the exact specifications. (+ admin panel, login, register form if possible)
+Have a basic prototype working and exchanging info between a basic front end, back end and database
