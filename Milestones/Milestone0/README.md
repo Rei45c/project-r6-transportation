@@ -19,16 +19,16 @@ update the status of the transportation (start of transportation, destination re
 tracking map in the customer panel.
 
 The cusotmer panel is used to make booking from customers. The customers logins with his email and password (registers if it is the first time,
-and his data is stored in the database under Customer[email, password]). Then he choses the pickup, destination address and pickup time (autocomplete
-of the address through link via Google Maps APIs). He further choses the type of goods to be transported (furniture, general 
+and his data is stored in the database under Customer[email, password]). Then he choses the exact pickup and estination address through linking via Google Maps APIs. 
+He further choses the type of goods to be transported (furniture, general 
 articles, building materials, pharmaceuticals, food, vehicle equipment, explosive substances...) and in this category that he chose, he
 can order more than 1 package (to allow different features for each package, for example size, weight, quantity). If the product is 
 not already packaged, the user can chose one from different types of packaging. He can also chose if the product needs special
 handling requirements such as fragile items, cooled temperature etc. The cost will be calculated taking the weight, volume, special requirements,
-the distance between pickup and delievery address, as well as the current location of the vehicle.Then the customer choses an offer received
-from the server, gives the exact location details, contact information of the receiver in the delievery point and also bank details for the 
-payment. After that the booking is confirmed and a driver will be assigned to the vehicle, whose park location is nearer to the pickup location
-than other available vehicles.
+the distance between pickup and delievery address. Then the customer choses an offer received
+from the server, gives contact information of the receiver in the delievery point and also bank details for the 
+payment. After that the booking is confirmed and a driver will be assigned to the vehicle, whose park location(city, not exact park location is stored in the database)
+is nearer to the pickup location city than other available vehicles.
 
 For a specific look, see this mockup: https://lun-eu.icons8.com/d/7g5OgMXDDkS5I20Q48KoIA?page=7w5OgMXDDkS5I20Q48KoIA&vp=-2453,-2600,7774,3972 
 
