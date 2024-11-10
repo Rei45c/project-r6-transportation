@@ -8,7 +8,7 @@ function App() {
 
     useEffect(() => {
         // Funktion, die die Anfrage an die REST API stellt
-        fetch("http://localhost:8080/hello")
+        fetch("http://localhost:7070/hello")
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
