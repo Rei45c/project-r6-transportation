@@ -1,0 +1,119 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    scroll-behavior: smooth; /* Enables smooth scrolling */
+  }
+  
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 1rem;
+    color: white;
+    position: sticky;
+    top: 0; /* Makes navbar stick to the top */
+    z-index: 1000;
+  }
+  
+  .navbar-logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  .navbar-links {
+    list-style: none;
+    display: flex;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .navbar-links li a {
+    text-decoration: none;
+    color: white;
+    transition: color 0.3s;
+  }
+  
+  .navbar-links li a:hover {
+    color: #00bcd4;
+  }
+  
+  .section {
+    padding: 100px 20px;
+    min-height: 100vh; /* Ensures each section covers at least the viewport height */
+    border-bottom: 1px solid #ddd;
+  }
+  
+  #home {
+    background-color: #f4f4f4;
+  }
+  
+  #about {
+    background-color: #fff;
+  }
+  
+  #services {
+    background-color: #f4f4f4;
+  }
+  
+  #contact {
+    background-color: #fff;
+  }
+
+
+
+
+
+
+
+  .section {
+    margin: 20px;
+    padding: 20px;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  form div {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  form label {
+    font-weight: bold;
+  }
+  
+  form input, form button {
+    padding: 8px;
+    font-size: 16px;
+  }
+  
+  form button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+
+
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #555;
+    color: white;
+  }
+  
+  button[style] {
+    background-color: #ccc;
+    border: none;
+    border-radius: 5px;
+  }

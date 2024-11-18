@@ -2,6 +2,11 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+The following installation are also necessary in the local git folder:
+-npm install @react-google-maps/api
+-npm install react-select react-select-async-paginate
+-npm install react-router-dom
+
 ## Available Scripts
 
 In the project directory, you can run:
