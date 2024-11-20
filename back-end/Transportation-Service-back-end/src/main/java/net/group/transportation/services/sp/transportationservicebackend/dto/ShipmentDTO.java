@@ -16,5 +16,7 @@ public class ShipmentDTO {
     private User createdBy;
     private Double longitude;
     private Double latitude;
+    private Double price;
+    private Integer packageAmount;
 
 }

@@ -46,7 +46,7 @@ const Homepage = () => {
     <div>
         <Navbar />
         <section id="home" className="section">
-        <h1>Welcome to Transerv</h1>
+        <h1>Welcome to Transver</h1>
         <form onSubmit={handleSubmit} className="address-form">
           <AddressAutocomplete
             label="Pickup Address"
@@ -69,7 +69,7 @@ const Homepage = () => {
         
         <section id="services_and_benefits" className="section">
           <h2>Services and benefits</h2>
-          <ul>
+          <ul>″
             <li>Custom Web Development</li>
             <li>Mobile App Development</li>
             <li>Cloud Computing Solutions</li>

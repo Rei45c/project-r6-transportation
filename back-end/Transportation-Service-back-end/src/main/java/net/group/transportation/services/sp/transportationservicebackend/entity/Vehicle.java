@@ -3,6 +3,8 @@ package net.group.transportation.services.sp.transportationservicebackend.entity
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "vehicle")
 @Getter
@@ -23,6 +25,8 @@ public class Vehicle {
     private Double currentPositionLongitude;
     @Column(name = "positionLatitude", nullable = false, updatable = true)
     private Double currentPositionLatitude;
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)
+    List<Parcel> parcelsLoaded;
 
 
 

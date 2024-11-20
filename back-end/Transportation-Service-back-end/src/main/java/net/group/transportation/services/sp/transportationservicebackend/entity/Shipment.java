@@ -38,6 +38,8 @@ public class Shipment {
     private Double longitude;
     @Column(name = "latitude", nullable = true, updatable = true)
     private Double latitude;
+    @Column(name = "price", nullable = false, updatable = true)
+    private Double price;
 
 
 }
