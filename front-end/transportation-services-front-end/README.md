@@ -6,6 +6,8 @@ The following installation are also necessary in the local git folder:
 -npm install @react-google-maps/api
 -npm install react-select react-select-async-paginate
 -npm install react-router-dom
+-npm install react-hook-form
+-npm install axios
 
 ## Available Scripts
 
