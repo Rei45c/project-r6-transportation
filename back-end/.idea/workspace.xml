@@ -5,13 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c76734e8-63ea-45df-966d-ca5c9a147461" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/entity/Parcel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/dto/ShipmentDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/dto/ShipmentDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/dto/VehicleDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/dto/VehicleDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/entity/Shipment.java" beforeDir="false" afterPath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/entity/Shipment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/entity/Vehicle.java" beforeDir="false" afterPath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/entity/Vehicle.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front-end/transportation-services-front-end/src/components/Homepage.js" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/transportation-services-front-end/src/components/Homepage.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Transportation-Service-back-end/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Transportation-Service-back-end/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,7 +95,10 @@
       <workItem from="1731250870435" duration="1315000" />
       <workItem from="1731878372371" duration="10000" />
       <workItem from="1732051689845" duration="5695000" />
-      <workItem from="1732061077678" duration="1212000" />
+      <workItem from="1732061077678" duration="1964000" />
+      <workItem from="1732137118617" duration="614000" />
+      <workItem from="1732395524958" duration="679000" />
+      <workItem from="1732396510522" duration="1653000" />
     </task>
     <servers />
   </component>
