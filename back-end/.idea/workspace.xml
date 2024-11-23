@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c76734e8-63ea-45df-966d-ca5c9a147461" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Transportation-Service-back-end/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Transportation-Service-back-end/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/Transportation-Service-back-end/src/main/java/net/group/transportation/services/sp/transportationservicebackend/config/SecurityConfig.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -96,7 +95,7 @@
       <workItem from="1732061077678" duration="1964000" />
       <workItem from="1732137118617" duration="614000" />
       <workItem from="1732395524958" duration="679000" />
-      <workItem from="1732396510522" duration="2060000" />
+      <workItem from="1732396510522" duration="2510000" />
     </task>
     <servers />
   </component>

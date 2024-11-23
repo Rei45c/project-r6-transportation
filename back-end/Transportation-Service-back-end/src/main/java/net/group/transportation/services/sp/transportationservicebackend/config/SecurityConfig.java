@@ -8,20 +8,36 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable) // Optional, wenn nur lokal getestet wird
-                .authorizeRequests()
-                .requestMatchers(new AntPathRequestMatcher("/**")).permitAll() // Erlaube /hello für alle
-                .requestMatchers(new AntPathRequestMatcher("/api/users/signup")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/users")).permitAll()
-                .anyRequest().authenticated();
+        http.csrf(AbstractHttpConfigurer::disable).cors() // Aktiviere CORS
+                .and()
+                .authorizeRequests().anyRequest().permitAll(); // Erlaube alle Anfragen
 
         return http.build();
+    }
+
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:3000"); // Erlaubte Origin
+        config.addAllowedHeader("*"); // Erlaube alle Header
+        config.addAllowedMethod("*"); // Erlaube alle HTTP-Methoden
+        source.registerCorsConfiguration("/**", config); // Gilt für alle Endpunkte
+        return new CorsFilter(source);
     }
 }
