@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import AsyncSelect from 'react-select/async';
 
@@ -31,12 +31,14 @@ const Homepage = () => {
   const [pickup, setPickup] = useState('');
   const [destination, setDestination] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const { email } = location.state || {};
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (pickup && destination) {
       // Redirect to product details page
-      navigate('/product-details', { state: { pickup: pickup.label, destination: destination.label } });
+      navigate('/product-details', { state: { pickup: pickup.label, destination: destination.label, email: email } });
     } else {
       alert('Please fill in both fields.');
     }

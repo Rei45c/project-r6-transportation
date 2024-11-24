@@ -18,6 +18,7 @@ const Signup = () => {
       const response = await axios.post("http://localhost:7070/api/users/signup", {
         email,
         password,
+        role: "CUSTOMER"
       });
       alert(response.data);
     } catch (error) {

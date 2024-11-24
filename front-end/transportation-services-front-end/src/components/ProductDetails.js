@@ -4,13 +4,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const ProductDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { pickup, destination } = location.state || {};
+  const { pickup, destination, email } = location.state || {};
   const [weight, setWeight] = useState('');
   const [size, setSize] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(`Details submitted successfully!\nPickup: ${pickup}\nDestination: ${destination}\nWeight: ${weight} kg\nSize: ${size}`);
+    alert(`Pickup: ${pickup}\nDestination: ${destination}\nWeight: ${weight} kg\nSize: ${size}\nEmail: ${email}`);
     // You can further process or redirect as needed
   };
 
