@@ -2,6 +2,7 @@ import React from 'react';
 import Login from "./Login";
 import Signup from "./Signup";
 import Navbar from './Navbar';
+import Offer from './Offer';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import Homepage from './Homepage';
 import ProductDetails from './ProductDetails';
@@ -17,6 +18,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/homepage" element={<Homepage />} />
           <Route path="/product-details" element={<ProductDetails />} />
+          <Route path="/offer" element={<Offer />} />
         </Routes>
       </div>
     </Router>

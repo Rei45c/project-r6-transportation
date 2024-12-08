@@ -38,7 +38,7 @@ Tools that will be used:
 
 -back end: Spring framework
 
--database: PostgreSQL
+-database: MySQL
 
 ## Plan for next milestone
 Have a basic prototype working and exchanging info between a basic front end, back end and database

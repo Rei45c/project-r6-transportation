@@ -11,18 +11,39 @@ const ProductDetails = () => {
   const [width, setWidth] = useState('');
   const [height, setHeight] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // weight
-    // length
-    // width
-    // height
-    // email
-    // pickup.label --> full address
-    // destination.label --> full address
-    // pickup.lon    destination.lon   pickup.lat   destination.lat
-    alert(`--> ${destination.lon}`);
-    // You can further process or redirect as needed
+  
+    const requestData = {
+      email,
+      pickup: {label: pickup?.label, lat: pickup?.lat, lon: pickup?.lon},
+      destination: {label: destination?.label, lat: destination?.lat, lon: destination?.lon},
+      weight: parseFloat(weight),
+      dimensions: {
+        length: parseFloat(length),
+        width: parseFloat(width),
+        height: parseFloat(height),
+      },
+    };
+    //console.log(requestData);
+    try {
+      const response = await fetch("http://localhost:7070/api/users/offer", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }, //Tells the server that the request body contains JSON data.
+        body: JSON.stringify(requestData), //Sends the request data as a JSON string.
+      });
+
+      if (response.ok) {
+        const data = await response.json(); //Parses the response body as JSON.
+        //alert(data.cost);
+        navigate('/offer', { state: { offerDetails: { ...requestData, cost: data.cost } } });
+      } else {
+        alert('Failed to generate offer. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error generating offer:', error);
+      alert('An error occurred while generating the offer.');
+    }
   };
 
   const goBack = () => {

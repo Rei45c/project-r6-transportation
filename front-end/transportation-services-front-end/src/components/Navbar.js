@@ -7,13 +7,13 @@ const Navbar = () => {
   const location = useLocation();
 
   // Check if the current URL is `/product-details`
-  const isProductDetails = location.pathname === '/product-details';
+  const is_not_homepage = location.pathname === '/product-details' || location.pathname === '/offer';
 
   return (
     <nav className="navbar">
       <div className="navbar-logo">Transerv</div>
       <ul className="navbar-links">
-        {isProductDetails ? (
+        {is_not_homepage ? (
           <li><a href="#logout" onClick={() => navigate('/')}>Log out</a></li>
         ) : (
           <>
