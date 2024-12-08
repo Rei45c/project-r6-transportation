@@ -8,8 +8,13 @@ Navigate to front-end/transportation-services-front-end to start the front end b
 Navigate to back-end/Transportation-Service-back-end to start the server by "mvn spring-boot:run".
 
 The following installation are also necessary in the local git folder in the front end part:
+
 -npm install @react-google-maps/api
+
 -npm install react-select react-select-async-paginate
+
 -npm install react-router-dom
+
 -npm install react-hook-form
+
 -npm install axios
