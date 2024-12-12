@@ -29,7 +29,7 @@ const Login = () => {
         }
       } catch (error) {
         setErrorMessage(
-          error.response?.data || "Invalid email or password. Please try again."
+          error.response?.data
         );
       }
     };
