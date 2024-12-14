@@ -21,9 +21,12 @@ const Login = () => {
   
         const { role } = response.data; // Assuming response contains role
         if (role === "CUSTOMER") {
-          navigate("/homepage", { state: { email: email } }); // Redirect to Customer component
-        } /*else if (role === "DRIVER") {
-          navigate("/driver"); // Redirect to Driver component
+          navigate("/homepage", { state: { email: email } }); // Redirect to Customer part
+        } else if (role === "MANAGER") {
+          navigate("/manager"); // Redirect to Manager part
+        }
+         /*else if (role === "DRIVER") {
+          navigate("/driver"); // Redirect to Driver part
         } */else {
           setErrorMessage("Unknown role. Please contact support.");
         }

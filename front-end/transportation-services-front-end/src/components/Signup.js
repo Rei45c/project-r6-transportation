@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import axios from "axios";
 
 const Signup = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSignup = async (e) => {
-    e.preventDefault();
+    //e.preventDefault();
 
     if (password !== confirmPassword) {
       alert("Passwords do not match");
@@ -16,6 +17,7 @@ const Signup = () => {
 
     try {
       const response = await axios.post("http://localhost:7070/api/users/signup", {
+        name,
         email,
         password,
         role: "CUSTOMER"
@@ -30,6 +32,13 @@ const Signup = () => {
     <div>
       <h2>Signup</h2>
       <form onSubmit={handleSignup}>
+        <input
+          type="text"
+          placeholder="Enter your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
         <input
           type="email"
           placeholder="Enter email" 

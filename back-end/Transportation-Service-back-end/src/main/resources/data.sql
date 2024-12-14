@@ -1,0 +1,1 @@
+INSERT IGNORE INTO user (email, name, password, user_role) VALUES ('m.m@gmail.com', 'manager_name', 'm', 'MANAGER');

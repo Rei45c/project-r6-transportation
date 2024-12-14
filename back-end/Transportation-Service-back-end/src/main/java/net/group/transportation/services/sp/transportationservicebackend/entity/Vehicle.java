@@ -25,6 +25,8 @@ public class Vehicle {
     private Double currentPositionLongitude;
     @Column(name = "positionLatitude", nullable = false, updatable = true)
     private Double currentPositionLatitude;
+    @Column(name = "address", nullable = false, updatable = true)
+    private String address;
     //@OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL)
     //List<Parcel> parcelsLoaded;
     @Column(name = "vehicleType", nullable = false, updatable = true)
@@ -33,6 +35,7 @@ public class Vehicle {
     private Double maxWeight;
     @Column(name = "maxVolume", nullable = false, updatable = true)
     private Double maxVolume;
-    @Column(name = "availableVehicle", nullable = false, updatable = true)
-    private boolean availableVehicle;
+    @Column(name = "availableVehicle", nullable = false, updatable=true)
+    private int available;
 }
+

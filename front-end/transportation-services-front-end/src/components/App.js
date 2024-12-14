@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react
 import Homepage from './Homepage';
 import ProductDetails from './ProductDetails';
 import '../App.css';
+import Manager from './Manager';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/homepage" element={<Homepage />} />
+          <Route path="/manager" element={<Manager />} />
           <Route path="/product-details" element={<ProductDetails />} />
           <Route path="/offer" element={<Offer />} />
         </Routes>

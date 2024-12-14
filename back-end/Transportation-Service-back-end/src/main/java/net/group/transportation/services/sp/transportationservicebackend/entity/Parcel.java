@@ -12,10 +12,12 @@ public class Parcel {
     private Double length;
     @Column(name = "width", nullable = false)
     private Double width;
+    @Column(name = "height", nullable = false)
+    private Double height;
     @Column(name = "weight", nullable = false)
     private Double weight;
     @ManyToOne
-            @JoinColumn(name = "vehicle_id", nullable = true)
+    @JoinColumn(name = "vehicle_id", nullable = true)
     Vehicle vehicle;
 
 }

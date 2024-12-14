@@ -8,20 +8,24 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "user")
 @Getter
 @Setter
-@Builder
+@SuperBuilder // to provide inheritance
 @AllArgsConstructor
 @NoArgsConstructor
+@Inheritance(strategy = InheritanceType.JOINED) //Separate tables for the base class and subclasses, joined by the primary key
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+    @Column(name = "name", nullable = false, updatable = false)
+    private String name;
     // @Column(name = "username", nullable = false, unique = true, length = 100, updatable = false)
     // private String username;
     @Column(name = "password", nullable = false, updatable = true)

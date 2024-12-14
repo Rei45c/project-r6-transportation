@@ -7,6 +7,8 @@ Navigate to front-end/transportation-services-front-end to start the front end b
 
 Navigate to back-end/Transportation-Service-back-end to start the server by "mvn spring-boot:run".
 
+## Installations
+
 The following installation are also necessary in the local git folder in the front end part:
 
 -npm install @react-google-maps/api
@@ -18,3 +20,13 @@ The following installation are also necessary in the local git folder in the fro
 -npm install react-hook-form
 
 -npm install axios
+
+## Description
+
+The file ".\back-end\Transportation-Service-back-end\src\main\resources\data.sql" is executed to insert a manager in the User table after Hibernate schema creation is performed. Use the following credentials to log in as Manager and be able to add new drivers and vehicles:
+
+Manager's email: m.m@gmail.com
+
+Manager's password: m
+
+

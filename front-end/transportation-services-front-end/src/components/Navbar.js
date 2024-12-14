@@ -7,7 +7,7 @@ const Navbar = () => {
   const location = useLocation();
 
   // Check if the current URL is `/product-details`
-  const is_not_homepage = location.pathname === '/product-details' || location.pathname === '/offer';
+  const is_not_homepage = location.pathname === '/product-details' || location.pathname === '/offer' || location.pathname === '/manager';
 
   return (
     <nav className="navbar">

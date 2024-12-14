@@ -6,7 +6,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 import net.group.transportation.services.sp.transportationservicebackend.repositories.UserRepository;
+import net.group.transportation.services.sp.transportationservicebackend.repositories.DriverRepository;
+import net.group.transportation.services.sp.transportationservicebackend.repositories.VehicleRepository;
 import net.group.transportation.services.sp.transportationservicebackend.entity.User;
+import net.group.transportation.services.sp.transportationservicebackend.entity.Driver;
+import net.group.transportation.services.sp.transportationservicebackend.entity.Vehicle;
+import net.group.transportation.services.sp.transportationservicebackend.dto.DriverDTO;
+import net.group.transportation.services.sp.transportationservicebackend.enums.userRole;
 
 import java.util.Optional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,6 +26,10 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private DriverRepository driverRepository;
+    @Autowired
+    private VehicleRepository vehicleRepository;
 
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody User user) {
@@ -28,6 +38,64 @@ public class UserController {
         }
         userRepository.save(user);
         return ResponseEntity.ok("User registered successfully");
+    }
+
+    @PostMapping("/registerDriver")
+    public ResponseEntity<String> register_driver(@RequestBody DriverDTO driverDTO) {
+        if (userRepository.findByEmail(driverDTO.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body("Email of the driver already exists");
+        }
+
+        Driver driver = new Driver();
+        driver.setName(driverDTO.getName());
+        driver.setEmail(driverDTO.getEmail());
+        driver.setPassword(driverDTO.getPassword());
+        driver.setRole(userRole.DRIVER);
+        driver.setVehicle(null); // no vehicle assigned initially
+        driver.setCurrentPositionLongitude(driverDTO.getPositionLongitude());
+        driver.setCurrentPositionLatitude(driverDTO.getPositionLatitude());
+        driver.setAddress(driverDTO.getAddress());
+        driver.setAvailable(driverDTO.getAvailable());
+        System.out.println("\n\n name:" +driver.getName() +"address:"+driver.getAddress()+"avail:"+driver.getAvailable()+" \n\n");
+
+        driverRepository.save(driver);
+
+        return ResponseEntity.ok("Driver registered successfully");
+    }
+
+    @PostMapping("/registerVehicle")
+    public ResponseEntity<String> register_vehicle(@RequestBody Vehicle vehicle) {
+
+        Vehicle driver = new Vehicle();
+        vehicle.setDriver(null);
+
+        vehicleRepository.save(vehicle);
+
+        return ResponseEntity.ok("Vehicle registered successfully");
+    }
+
+    @DeleteMapping("/deleteDriver/{id}")
+    public ResponseEntity<String> deleteDriver(@PathVariable Long id) {
+        Optional<Driver> driverOptional = driverRepository.findById(id);
+
+        if (driverOptional.isPresent()) {
+            driverRepository.deleteById(id);
+            return ResponseEntity.ok("Driver deleted successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Driver not found");
+        }
+    }
+
+    @DeleteMapping("/deleteVehicle/{id}")
+    public ResponseEntity<String> deleteVehicle(@PathVariable Long id) {
+        Optional<Vehicle> vehicleOptional = vehicleRepository.findById(id);
+
+        if (vehicleOptional.isPresent()) {
+            vehicleRepository.deleteById(id);
+            return ResponseEntity.ok("Vehicle deleted successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Vehicle not found");
+        }
     }
 
     @PostMapping("/login")
