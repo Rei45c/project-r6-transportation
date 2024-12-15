@@ -18,6 +18,8 @@ import java.util.Optional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.http.HttpStatus;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/users")
@@ -136,17 +138,27 @@ public class UserController {
             double destinationLat = Double.parseDouble(destination.get("lat").toString());
             double destinationLon = Double.parseDouble(destination.get("lon").toString());
 
-            double distance = calculateDistance(pickupLat, pickupLon, destinationLat, destinationLon);
+            double distance_pickup_destination = calculateDistance(pickupLat, pickupLon, destinationLat, destinationLon);
             double volume = length * width * height;
-            double cost = calculateCost(distance, weight, volume);
 
+            Vehicle selectedVehicle = findSuitableVehicle(pickupLat, pickupLon, weight, volume);
+            Driver selectedDriver = findSuitableDriver(selectedVehicle.getCurrentPositionLatitude(), selectedVehicle.getCurrentPositionLongitude());
+            if (selectedVehicle == null || selectedDriver == null) {
+                return ResponseEntity.ok().body("No suitable vehicle or driver available.");
+            }
+
+            double distance_vehicle_pickup = calculateDistance(selectedVehicle.getCurrentPositionLatitude(), selectedVehicle.getCurrentPositionLongitude(), pickupLat, pickupLon);
+            double total_distance = distance_vehicle_pickup + distance_pickup_destination;
+            double cost = Math.round(calculateCost(total_distance, weight, volume) * 100.0) / 100.0;
+            //System.out.println("\n\n Vehicle-->addr:"+selectedVehicle.getCurrentPositionLatitude()+", type: "+selectedVehicle.getVehicleType()+", maxweight: "+selectedVehicle.getMaxWeight()+", maxVolume: "+selectedVehicle.getMaxVolume()+"\nDriver-->id: "+selectedDriver.getId()+", addr: "+selectedDriver.getAddress()+" \n\n");
+
+            double duration = Math.round(total_distance/80 * 100.0) / 100.0; // duration in hours, average speed of a vehicle=80km/h
+            duration += 2; // 2 hours for the driver to get to the vehicle or other latency reasons
+            
             Map<String, Object> response = Map.of(
-                "email", email,
-                "pickup", Map.of("label", pickup.get("label"), "lat", pickupLat, "lon", pickupLon),
-                "destination", Map.of("label", destination.get("label"), "lat", destinationLat, "lon", destinationLon),
-                "weight", weight,
-                "dimensions", Map.of("length", length, "width", width, "height", height),
-                "cost", cost
+                "email_driver", selectedDriver.getEmail(),
+                "cost", cost,
+                "duration", duration
             );
 
             return ResponseEntity.ok(response);
@@ -177,9 +189,63 @@ public class UserController {
     }
 
     private double calculateCost(double distance, double weight, double volume) {
-        double baseRate = 5.0; // base rate per km
-        double weightRate = 2.0; // weight rate per kg
-        double volumeRate = 0.05; // volume rate per cubic cm
+        double baseRate = 0.7; // base rate per km
+        double weightRate = 0.05; // weight rate per kg
+        double volumeRate = 0.4; // volume rate per cubic cm
         return (baseRate * distance) + (weightRate * weight) + (volumeRate * volume);
+    }
+
+    private Vehicle findSuitableVehicle(double pickupLat, double pickupLon, double weight, double volume) {
+        double predefinedDistance = 50.0; // radius in kilometers
+        List<Vehicle> allVehicles = vehicleRepository.findAll();
+
+        List<Vehicle> nearbyVehicles = new ArrayList<>();
+        Vehicle bestVehicle_within_zone = null;
+        Vehicle bestVehicle_overall = null;
+
+        double minDistance_overall = Double.MAX_VALUE;
+        for (Vehicle vehicle : allVehicles) {
+            double distance = calculateDistance(pickupLat, pickupLon, vehicle.getCurrentPositionLatitude(), vehicle.getCurrentPositionLongitude());
+            // find all vehicles within the predefined distance
+            if (distance <= predefinedDistance) {
+                nearbyVehicles.add(vehicle);
+            }
+            // find the nearest vehicle within the range of volume and weight, without considering the nearby zone
+            if (distance < minDistance_overall && vehicle.getMaxVolume() >= volume && vehicle.getMaxWeight() >= weight && vehicle.getAvailable()==1) {
+                minDistance_overall = distance;
+                bestVehicle_overall = vehicle;
+            }
+        }
+
+        // from nearby vehicles, find the best vehicle meeting volume and weight conditions
+        for (Vehicle vehicle : nearbyVehicles) {
+            if (vehicle.getMaxVolume() >= volume && vehicle.getMaxWeight() >= weight && vehicle.getAvailable()==1) {
+                if (bestVehicle_within_zone == null || vehicle.getMaxVolume() < bestVehicle_within_zone.getMaxVolume()) {
+                    bestVehicle_within_zone = vehicle; // because it could be just a small product assigned to a very big vehicle
+                }
+            }
+        }
+
+        if (bestVehicle_within_zone == null)
+            return bestVehicle_overall;
+        else
+            return bestVehicle_within_zone;
+    }
+
+    private Driver findSuitableDriver(double vehicleLat, double vehicleLon) {
+        List<Driver> allDrivers = driverRepository.findAll();
+
+        Driver nearest_driver = null;
+        double minDistance = Double.MAX_VALUE;
+        for (Driver driver: allDrivers) {
+            double distance = calculateDistance(vehicleLat, vehicleLon, driver.getCurrentPositionLatitude(), driver.getCurrentPositionLongitude());
+
+            if (distance < minDistance && driver.getAvailable()==1) {
+                minDistance = distance;
+                nearest_driver = driver;
+            }
+        }
+
+        return nearest_driver;
     }
 }

@@ -34,11 +34,17 @@ const ProductDetails = () => {
       });
 
       if (response.ok) {
-        const data = await response.json(); //Parses the response body as JSON.
-        //alert(data.cost);
-        navigate('/offer', { state: { offerDetails: { ...requestData, cost: data.cost } } });
+        const contentType = response.headers.get("Content-Type");
+        if (contentType && contentType.includes("application/json")) {
+          const data = await response.json();
+          navigate('/offer', { state: { offerDetails: { ...requestData, email_driver: data.email_driver, cost: data.cost, duration: data.duration } } });
+        } else {
+          const text = await response.text();
+          alert(text);
+        }
       } else {
-        alert('Failed to generate offer. Please try again.');
+        const errorText = await response.text(); // for example if there is no suitable vehicle found
+        alert(errorText);
       }
     } catch (error) {
       console.error('Error generating offer:', error);
