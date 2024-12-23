@@ -87,6 +87,11 @@
             <artifactId>mapstruct-processor</artifactId>
             <version>1.5.5.Final</version>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20210307</version> <!-- Make sure to use the latest version -->
+        </dependency>
     </dependencies>
 
     <build>

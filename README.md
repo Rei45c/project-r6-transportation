@@ -21,6 +21,8 @@ The following installation are also necessary in the local git folder in the fro
 
 -npm install axios
 
+-npm install react-leaflet@4.2.1 leaflet
+
 ## Description
 
 The file ".\back-end\Transportation-Service-back-end\src\main\resources\data.sql" is executed to insert a manager in the User table after Hibernate schema creation is performed. Use the following credentials to log in as Manager and be able to add new drivers and vehicles:

@@ -10,10 +10,11 @@ const ProductDetails = () => {
   const [length, setLength] = useState('');
   const [width, setWidth] = useState('');
   const [height, setHeight] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    setIsLoading(true); // Start loading
     const requestData = {
       email,
       pickup: {label: pickup?.label, lat: pickup?.lat, lon: pickup?.lon},
@@ -37,7 +38,7 @@ const ProductDetails = () => {
         const contentType = response.headers.get("Content-Type");
         if (contentType && contentType.includes("application/json")) {
           const data = await response.json();
-          navigate('/offer', { state: { offerDetails: { ...requestData, email_driver: data.email_driver, cost: data.cost, duration: data.duration } } });
+          navigate('/offer', { state: { offerDetails: { ...requestData, email_driver: data.email_driver, address_vehicle:data.address_vehicle, cost: data.cost, duration: data.duration } } });
         } else {
           const text = await response.text();
           alert(text);
@@ -49,6 +50,8 @@ const ProductDetails = () => {
     } catch (error) {
       console.error('Error generating offer:', error);
       alert('An error occurred while generating the offer.');
+    } finally {
+      setIsLoading(false); // End loading
     }
   };
 
@@ -85,7 +88,9 @@ const ProductDetails = () => {
           <input type="text" placeholder="Enter height" value={height}
             onChange={(e) => setHeight(e.target.value)} required />
         </div>
-        <button type="submit">Submit</button>
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Loading...' : 'Submit'}
+        </button>
       </form>
 
       <button onClick={goBack} style={{ marginTop: '20px', background: '#ccc' }}>

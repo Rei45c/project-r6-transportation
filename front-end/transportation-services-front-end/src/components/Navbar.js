@@ -17,6 +17,7 @@ const Navbar = () => {
           <li><a href="#logout" onClick={() => navigate('/')}>Log out</a></li>
         ) : (
           <>
+            <li><a href="#my_bookings" onClick={() => navigate('/')}>My bookings</a></li>
             <li><a href="#how_it_works">How it works</a></li>
             <li><a href="#services_and_benefits">Services and benefits</a></li>
             <li><a href="#contact">Contact</a></li>

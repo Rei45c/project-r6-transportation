@@ -18,7 +18,7 @@ const Offer = () => {
     );
   }
 
-  const { pickup, destination, weight, dimensions, email, email_driver, cost, duration } = offerDetails;
+  const { pickup, destination, weight, dimensions, email, email_driver, address_vehicle, cost, duration } = offerDetails;
 
   return (
     <div>
@@ -27,6 +27,7 @@ const Offer = () => {
         <h1>Offer Summary</h1>
         <p><strong>Your email:</strong> {email}</p>
         <p><strong>Driver's email:</strong> {email_driver}</p>
+        <p><strong>Vehicle's parking address:</strong> {address_vehicle}</p>
         <p><strong>Pickup Address:</strong> {pickup.label}</p>
         <p><strong>Destination Address:</strong> {destination.label}</p>
         <p><strong>Weight:</strong> {weight} kg</p>

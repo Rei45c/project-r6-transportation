@@ -20,6 +20,11 @@ import org.springframework.http.HttpStatus;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import org.json.JSONObject;
 
 @RestController
 @RequestMapping("/api/users")
@@ -138,7 +143,10 @@ public class UserController {
             double destinationLat = Double.parseDouble(destination.get("lat").toString());
             double destinationLon = Double.parseDouble(destination.get("lon").toString());
 
-            double distance_pickup_destination = calculateDistance(pickupLat, pickupLon, destinationLat, destinationLon);
+            RouteInfo route_pickup_destination = getRouteInfo(pickupLat, pickupLon, destinationLat, destinationLon);
+            double distance_pickup_destination = route_pickup_destination.getDistance();
+            double duration_pickup_destination = route_pickup_destination.getDuration();
+
             double volume = length * width * height;
 
             Vehicle selectedVehicle = findSuitableVehicle(pickupLat, pickupLon, weight, volume);
@@ -147,18 +155,29 @@ public class UserController {
                 return ResponseEntity.ok().body("No suitable vehicle or driver available.");
             }
 
-            double distance_vehicle_pickup = calculateDistance(selectedVehicle.getCurrentPositionLatitude(), selectedVehicle.getCurrentPositionLongitude(), pickupLat, pickupLon);
+            RouteInfo route_vehicle_pickup = getRouteInfo(selectedVehicle.getCurrentPositionLatitude(), selectedVehicle.getCurrentPositionLongitude(), pickupLat, pickupLon);
+            double distance_vehicle_pickup = route_vehicle_pickup.getDistance();
+            double duration_vehicle_pickup = route_vehicle_pickup.getDuration();
+
+            RouteInfo route_driver_vehicle = getRouteInfo(selectedDriver.getCurrentPositionLatitude(), selectedDriver.getCurrentPositionLongitude(), selectedVehicle.getCurrentPositionLatitude(), selectedVehicle.getCurrentPositionLongitude());
+            double duration_driver_vehicle = route_driver_vehicle.getDuration();
+
             double total_distance = distance_vehicle_pickup + distance_pickup_destination;
             double cost = Math.round(calculateCost(total_distance, weight, volume) * 100.0) / 100.0;
             //System.out.println("\n\n Vehicle-->addr:"+selectedVehicle.getCurrentPositionLatitude()+", type: "+selectedVehicle.getVehicleType()+", maxweight: "+selectedVehicle.getMaxWeight()+", maxVolume: "+selectedVehicle.getMaxVolume()+"\nDriver-->id: "+selectedDriver.getId()+", addr: "+selectedDriver.getAddress()+" \n\n");
 
-            double duration = Math.round(total_distance/80 * 100.0) / 100.0; // duration in hours, average speed of a vehicle=80km/h
-            duration += 2; // 2 hours for the driver to get to the vehicle or other latency reasons
+            // duration_driver_vehicle --> time that it takes for the driver to go to the parking address of the vehicle (supposed the driver uses its own car)
+            // duration_vehicle_pickup --> time for the driver to go with the company's vehicle from parking address to the pickup address
+            // duration_pickup_destination --> time from pickup to destination address
+            // 0.0031*total_distance --> break time considering how long the route is
+            // +0.5 --> 30 min for other latency reasons
+            double total_duration = duration_driver_vehicle + duration_vehicle_pickup + duration_pickup_destination + 0.0031*total_distance + 0.5;
             
             Map<String, Object> response = Map.of(
                 "email_driver", selectedDriver.getEmail(),
+                "address_vehicle", selectedVehicle.getAddress(),
                 "cost", cost,
-                "duration", duration
+                "duration", total_duration
             );
 
             return ResponseEntity.ok(response);
@@ -169,8 +188,8 @@ public class UserController {
         }
     }
 
-    // Haversine formula to calculate the distance between 2 points in a sphere (Earth)
-    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    // (not used here) calculates the exact airline distance, using Haversine formula
+    private double calculateDistance_haversine(double lat1, double lon1, double lat2, double lon2) {
         double earth_radius = 6367.5; // approx Earth radius in km
 
         double lat1Rad = Math.toRadians(lat1);
@@ -186,6 +205,35 @@ public class UserController {
         double dist = 2 * earth_radius * Math.asin(Math.sqrt(enumerator/2)); 
 
         return dist; // in km
+    }
+
+    // calculates the exact road distance
+    private RouteInfo getRouteInfo(double lat1, double lon1, double lat2, double lon2) {
+        String pickupCoords = lon1 + "," + lat1;
+        String destinationCoords = lon2 + "," + lat2;
+        try{
+            // Fetch the route data from the OSRM API
+            String apiUrl = "https://router.project-osrm.org/route/v1/driving/" + pickupCoords + ";" + destinationCoords + "?overview=full&geometries=geojson";
+            URL url = new URL(apiUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET"); // send a GET request to the OSRM API
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine); // accumulate the JSON response from the API line by line into a StringBuffer.
+            }
+            in.close();
+
+            // Parse the JSON response and extract the distance
+            JSONObject jsonResponse = new JSONObject(response.toString());
+            double distance = jsonResponse.getJSONArray("routes").getJSONObject(0).getDouble("distance");
+            double duration = jsonResponse.getJSONArray("routes").getJSONObject(0).getDouble("duration");
+
+            return new RouteInfo(distance / 1000, duration / 3600); // distance in km, duration in hours
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private double calculateCost(double distance, double weight, double volume) {
@@ -205,7 +253,8 @@ public class UserController {
 
         double minDistance_overall = Double.MAX_VALUE;
         for (Vehicle vehicle : allVehicles) {
-            double distance = calculateDistance(pickupLat, pickupLon, vehicle.getCurrentPositionLatitude(), vehicle.getCurrentPositionLongitude());
+            RouteInfo route_vehicle_pickup = getRouteInfo(pickupLat, pickupLon, vehicle.getCurrentPositionLatitude(), vehicle.getCurrentPositionLongitude());
+            double distance = route_vehicle_pickup.getDistance();
             // find all vehicles within the predefined distance
             if (distance <= predefinedDistance) {
                 nearbyVehicles.add(vehicle);
@@ -238,7 +287,8 @@ public class UserController {
         Driver nearest_driver = null;
         double minDistance = Double.MAX_VALUE;
         for (Driver driver: allDrivers) {
-            double distance = calculateDistance(vehicleLat, vehicleLon, driver.getCurrentPositionLatitude(), driver.getCurrentPositionLongitude());
+            RouteInfo route_driver_vehicle = getRouteInfo(vehicleLat, vehicleLon, driver.getCurrentPositionLatitude(), driver.getCurrentPositionLongitude());
+            double distance = route_driver_vehicle.getDistance();
 
             if (distance < minDistance && driver.getAvailable()==1) {
                 minDistance = distance;
