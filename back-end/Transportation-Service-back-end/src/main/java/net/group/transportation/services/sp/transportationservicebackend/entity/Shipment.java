@@ -26,18 +26,29 @@ public class Shipment {
     @Column(name = "shipmentStatus", nullable = false, updatable = true)
     private shipmentStatus shipmentStatus;
     @ManyToOne
-    @JoinColumn(name = "createdBy", nullable = false, updatable = false)
+    @JoinColumn(name = "createdBy", referencedColumnName = "email", nullable = false, updatable = false)
     private User createdBy;
+    @OneToOne
+    @JoinColumn(name = "driver_email", referencedColumnName = "email", nullable = false, updatable = false)
+    private User driver;
     //@CreationTimestamp
     //@Column(name = "created_On", nullable = false, updatable = false)
     //private LocalDateTime createdOn;
     //@UpdateTimestamp
     //@Column(name = "updated_On", nullable = false, updatable = true)
     //private LocalDateTime updatedOn;
-    //@Column(name = "longitude", nullable = true, updatable = true)
-    // private Double longitude;
-    // @Column(name = "latitude", nullable = true, updatable = true)
-    // private Double latitude;
+    @Column(name = "pickupLat", nullable = true, updatable = true)
+    private Double pickupLat;
+    @Column(name = "pickupLon", nullable = true, updatable = true)
+    private Double pickupLon;
+    @Column(name = "destinationLat", nullable = true, updatable = true)
+    private Double destinationLat;
+    @Column(name = "destinationLon", nullable = true, updatable = true)
+    private Double destinationLon;
+    @Column(name = "pickupLabel", nullable = true, updatable = true)
+    private String pickupLabel;
+    @Column(name = "destinationLabel", nullable = true, updatable = true)
+    private String destinationLabel;
     @Column(name = "price", nullable = false, updatable = true)
     private Double price;
     

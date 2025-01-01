@@ -4,4 +4,5 @@ import net.group.transportation.services.sp.transportationservicebackend.entity.
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
+    Vehicle findById(int id);
 }

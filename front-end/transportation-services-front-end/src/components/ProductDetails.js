@@ -38,7 +38,7 @@ const ProductDetails = () => {
         const contentType = response.headers.get("Content-Type");
         if (contentType && contentType.includes("application/json")) {
           const data = await response.json();
-          navigate('/offer', { state: { offerDetails: { ...requestData, email_driver: data.email_driver, address_vehicle:data.address_vehicle, cost: data.cost, duration: data.duration } } });
+          navigate('/offer', { state: { offerDetails: { ...requestData, email_driver: data.email_driver, address_vehicle:data.address_vehicle, vehicle_id:data.vehicle_id, cost: data.cost, duration: data.duration } } });
         } else {
           const text = await response.text();
           alert(text);
@@ -74,17 +74,17 @@ const ProductDetails = () => {
             onChange={(e) => setWeight(e.target.value)} required />
         </div>
         <div>
-          <label>Length (in cm):</label>
+          <label>Length (in m):</label>
           <input type="text" placeholder="Enter length" value={length}
             onChange={(e) => setLength(e.target.value)} required />
         </div>
         <div>
-          <label>Width (in cm):</label>
+          <label>Width (in m):</label>
           <input type="text" placeholder="Enter width" value={width}
             onChange={(e) => setWidth(e.target.value)} required />
         </div>
         <div>
-          <label>Height (in cm):</label>
+          <label>Height (in m):</label>
           <input type="text" placeholder="Enter height" value={height}
             onChange={(e) => setHeight(e.target.value)} required />
         </div>

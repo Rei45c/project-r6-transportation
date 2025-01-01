@@ -24,10 +24,9 @@ const Login = () => {
           navigate("/homepage", { state: { email: email } }); // Redirect to Customer part
         } else if (role === "MANAGER") {
           navigate("/manager"); // Redirect to Manager part
-        }
-         /*else if (role === "DRIVER") {
-          navigate("/driver"); // Redirect to Driver part
-        } */else {
+        } else if (role === "DRIVER") {
+          navigate("/driver", { state: { email: email } }); // Redirect to Driver part
+        } else {
           setErrorMessage("Unknown role. Please contact support.");
         }
       } catch (error) {

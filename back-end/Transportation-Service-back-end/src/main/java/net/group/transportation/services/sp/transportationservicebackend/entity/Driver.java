@@ -46,4 +46,4 @@ public class Driver extends User{
 // User[id, name, email, password, userRole]
 // Vehicle[id, driver_id(1to1,if null, means not available), positionLongitude, positionLatitude, address, vehicleType, maxWeight, maxVolume, available]
 // Parcel[id, length, width, height, weight, vehicle_id(*to1))]
-// Shipment[id, status, createdBy(*to1), price]
+// Shipment[id, status, price, driver_id, createdBy(*to1), pickuplat, pickuplon, destlat, destlon]

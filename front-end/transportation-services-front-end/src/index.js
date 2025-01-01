@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './styles.css';
 import App from './components/App';
 import reportWebVitals from './reportWebVitals';
+import Mybookings from './components/Mybookings';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

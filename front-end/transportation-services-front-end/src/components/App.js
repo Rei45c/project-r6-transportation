@@ -8,6 +8,8 @@ import Homepage from './Homepage';
 import ProductDetails from './ProductDetails';
 import '../App.css';
 import Manager from './Manager';
+import Mybookings from './Mybookings';
+import Driver from './Driver';
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
           <Route path="/manager" element={<Manager />} />
           <Route path="/product-details" element={<ProductDetails />} />
           <Route path="/offer" element={<Offer />} />
+          <Route path="/mybookings" element={<Mybookings />} />
+          <Route path="/driver" element={<Driver />} />
         </Routes>
       </div>
     </Router>

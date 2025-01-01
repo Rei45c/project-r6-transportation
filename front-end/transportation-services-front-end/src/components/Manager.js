@@ -215,7 +215,7 @@ const Manager = () => {
             </select>
           </div>
           <div>
-            <label>Max Weight:</label>
+            <label>Max Weight (kg):</label>
             <input
               type="number"
               value={vehicle.maxWeight}
@@ -226,7 +226,7 @@ const Manager = () => {
             />
           </div>
           <div>
-            <label>Max Volume:</label>
+            <label>Max Volume (cubic m):</label>
             <input
               type="number"
               value={vehicle.maxVolume}

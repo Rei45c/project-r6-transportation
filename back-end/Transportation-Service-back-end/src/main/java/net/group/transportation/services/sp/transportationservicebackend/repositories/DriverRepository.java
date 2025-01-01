@@ -4,4 +4,5 @@ import net.group.transportation.services.sp.transportationservicebackend.entity.
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DriverRepository extends JpaRepository<Driver, Long> {
+    Driver findByEmail(String email);
 }

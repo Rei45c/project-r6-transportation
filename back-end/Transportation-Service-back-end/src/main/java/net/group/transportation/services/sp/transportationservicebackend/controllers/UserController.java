@@ -8,11 +8,14 @@ import org.springframework.stereotype.Controller;
 import net.group.transportation.services.sp.transportationservicebackend.repositories.UserRepository;
 import net.group.transportation.services.sp.transportationservicebackend.repositories.DriverRepository;
 import net.group.transportation.services.sp.transportationservicebackend.repositories.VehicleRepository;
+import net.group.transportation.services.sp.transportationservicebackend.repositories.ShipmentRepository;
 import net.group.transportation.services.sp.transportationservicebackend.entity.User;
 import net.group.transportation.services.sp.transportationservicebackend.entity.Driver;
 import net.group.transportation.services.sp.transportationservicebackend.entity.Vehicle;
+import net.group.transportation.services.sp.transportationservicebackend.entity.Shipment;
 import net.group.transportation.services.sp.transportationservicebackend.dto.DriverDTO;
 import net.group.transportation.services.sp.transportationservicebackend.enums.userRole;
+import net.group.transportation.services.sp.transportationservicebackend.enums.shipmentStatus;
 
 import java.util.Optional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,6 +28,8 @@ import java.net.URL;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import org.json.JSONObject;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -37,6 +42,8 @@ public class UserController {
     private DriverRepository driverRepository;
     @Autowired
     private VehicleRepository vehicleRepository;
+    @Autowired
+    private ShipmentRepository shipmentRepository;
 
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody User user) {
@@ -172,10 +179,12 @@ public class UserController {
             // 0.0031*total_distance --> break time considering how long the route is
             // +0.5 --> 30 min for other latency reasons
             double total_duration = duration_driver_vehicle + duration_vehicle_pickup + duration_pickup_destination + 0.0031*total_distance + 0.5;
+            total_duration = Math.round(total_duration * 100.0) / 100.0;
             
             Map<String, Object> response = Map.of(
                 "email_driver", selectedDriver.getEmail(),
                 "address_vehicle", selectedVehicle.getAddress(),
+                "vehicle_id", selectedVehicle.getId(),
                 "cost", cost,
                 "duration", total_duration
             );
@@ -185,6 +194,103 @@ public class UserController {
         } catch (Exception e) {
             // exceptions such as missing fields or invalid data
             return ResponseEntity.badRequest().body("Invalid request: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/accepted")
+    public ResponseEntity<?> accepted(@RequestBody Map<String, Object> info) {
+        try {
+            // Extract fields from the request
+            String email_driver = (String) info.get("email_driver");
+            String email_customer = (String) info.get("email_customer");
+            int vehicle_id = (int) info.get("vehicle_id");
+            Map<String, Object> pickup = (Map<String, Object>) info.get("pickup");
+            Map<String, Object> destination = (Map<String, Object>) info.get("destination");
+            double price = Double.parseDouble(info.get("price").toString());
+
+            // Extract coordinates from pickup and destination
+            String pickupLabel = (String) pickup.get("label").toString();
+            double pickupLat = Double.parseDouble(pickup.get("lat").toString());
+            double pickupLon = Double.parseDouble(pickup.get("lon").toString());
+            String destinationLabel = (String) destination.get("label").toString();
+            double destinationLat = Double.parseDouble(destination.get("lat").toString());
+            double destinationLon = Double.parseDouble(destination.get("lon").toString());
+
+            Driver driver = driverRepository.findByEmail(email_driver);
+            Vehicle vehicle = vehicleRepository.findById(vehicle_id);
+            if (driver != null && vehicle!=null) {
+                driver.setAvailable(0);
+                driver.setVehicle(vehicle);
+                vehicle.setAvailable(0);
+                driverRepository.save(driver);
+                vehicleRepository.save(vehicle);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Driver not found with email: " + email_driver);
+            }
+
+            // insert into shipment
+            Shipment shipment = new Shipment();
+            shipment.setShipmentStatus(shipmentStatus.WAITING_FOR_PICKUP);
+
+            User customer = userRepository.findByEmail(email_customer).get();
+            shipment.setCreatedBy(customer);
+            shipment.setDriver(driver);
+            shipment.setPickupLat(pickupLat);
+            shipment.setPickupLon(pickupLon);
+            shipment.setDestinationLat(destinationLat);
+            shipment.setDestinationLon(destinationLon);
+            shipment.setPickupLabel(pickupLabel);
+            shipment.setDestinationLabel(destinationLabel);
+            shipment.setPrice(price);
+
+            shipmentRepository.save(shipment);
+
+            //System.out.println("\n\n email_driver:"+email_driver+", email_customer: "+email_customer+", price: "+price+"\npickupLat: "+pickupLat+", pickuplabel: "+pickupLabel+", destLabel: "+destinationLabel+" \n\n");
+            //System.out.println("vehicle_id: "+vehicle_id+"\n\n");
+
+            return ResponseEntity.ok("Offer accepted successfully!");
+
+        } catch (Exception e) {
+            // exceptions such as missing fields or invalid data
+            return ResponseEntity.badRequest().body("Invalid request: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/shipments")
+    public ResponseEntity<?> getShipmentsByCustomerEmail(@RequestParam String email) {
+        try {
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+            List<Shipment> shipments = null;
+            if (user.getRole() == userRole.CUSTOMER) // * shipment to 1 customer (for Mybookings component)
+              shipments = shipmentRepository.findByCreatedBy(user); // shipments created by that customer
+            else if (user.getRole() == userRole.DRIVER) // 1 shipment to 1 driver (for Driver component)
+              shipments = shipmentRepository.findByDriver((Driver)user); // shipment assigned to that driver
+
+            List<Map<String, Object>> response = null;
+
+            response = shipments.stream().map(shipment -> {
+                Map<String, Object> shipmentData = new HashMap<>();
+                shipmentData.put("pickupLabel", shipment.getPickupLabel());
+                shipmentData.put("pickupLat", shipment.getPickupLat());
+                shipmentData.put("pickupLon", shipment.getPickupLon());
+                shipmentData.put("destinationLabel", shipment.getDestinationLabel());
+                shipmentData.put("destinationLat", shipment.getDestinationLat());
+                shipmentData.put("destinationLon", shipment.getDestinationLon());
+                shipmentData.put("price", shipment.getPrice());
+                shipmentData.put("status", shipment.getShipmentStatus());
+                if (user.getRole() == userRole.CUSTOMER)
+                  shipmentData.put("driver_email", shipment.getDriver().getEmail());
+                else if (user.getRole() == userRole.DRIVER)
+                  shipmentData.put("customer_email", shipment.getCreatedBy().getEmail());
+                return shipmentData;
+            }).collect(Collectors.toList());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving shipments: " + e.getMessage());
         }
     }
 
@@ -239,7 +345,7 @@ public class UserController {
     private double calculateCost(double distance, double weight, double volume) {
         double baseRate = 0.7; // base rate per km
         double weightRate = 0.05; // weight rate per kg
-        double volumeRate = 0.4; // volume rate per cubic cm
+        double volumeRate = 40; // volume rate per cubic m
         return (baseRate * distance) + (weightRate * weight) + (volumeRate * volume);
     }
 
