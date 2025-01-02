@@ -5,10 +5,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet.awesome-markers";
 import L from "leaflet";
 import Navbar from './Navbar';
-import io from "socket.io-client"
 import { useCallback } from "react";
-
-const socket = io("http://localhost:3000");
 
 const customDivIcon = L.divIcon({
     html: `<div style="
@@ -51,6 +48,14 @@ const Mybookings = () => {
     }
   }, [shipments]);
 
+  // const handleStart = () => {
+  //   setIsDriving(true);
+  // };
+
+  // const handleEnd = () => {
+  //   setIsDriving(false);
+  // };
+
   useEffect(() => {
     const fetchShipments = async () => {
       try {
@@ -58,6 +63,9 @@ const Mybookings = () => {
         const data = await response.json();
         setShipments(data);
         //console.log(data[0]);
+        if (data.length > 0 && data[0].status === 'ON_THE_WAY') {
+          setIsDriving(true);
+        }
       } catch (error) {
         console.error("Error fetching shipments:", error);
       }
@@ -72,41 +80,12 @@ const Mybookings = () => {
     if (shipments.length > 0) {
       calculateRoute();
     }
-    console.log("outside");
-    console.log(socket.listeners("Start"));
-    // to test if socket event was emitted
-    socket.onAny((eventName, data) => {
-      console.log(`Received event: ${eventName}`, data);
-    });
-
-    // Listen for shipment start events
-    socket.on("Start", (data) => {
-      console.log("shipment started: ",data);
-      if (data.driver_email === shipments[0].driver_email) {
-        if (!route || route.length === 0) return;
-        setIsDriving(true);
-        // Logic to start moving the red dot
-      }
-    });
-
-    socket.on("End", (data) => {
-      console.log("shipment ended");
-      if (data.driver_email === shipments[0].driver_email) {
-        setIsDriving(false);
-        setDriverPosition(null);
-      }
-    });
-
-    return () => {
-      socket.off("Start");
-      socket.off("End");
-    };
-  }, [shipments, calculateRoute, route]);
+  }, [shipments]);
 
   useEffect(() => { // triggers whenever isDriving, route or duration changes
     if (isDriving && route) {
       let currentIndex = 0;
-
+ 
       const interval = setInterval(() => {
         if (currentIndex < route.length) {
           setDriverPosition(route[currentIndex]);
@@ -121,26 +100,36 @@ const Mybookings = () => {
     }
   }, [isDriving, route, duration]);
 
-  // useEffect(() => {
-  //   if (shipments.length > 0) {
-  //     calculateRoute();
-  //   }
-  // }, [shipments]);
+  // Optionally, if you want to update `isDriving` based on any status change after fetching:
+  useEffect(() => {
+    if (shipments.length > 0) {
+      const status = shipments[0].status;
+      if (status === 'ON_THE_WAY' && !isDriving) {
+        setIsDriving(true);
+      } else if (status !== 'ON_THE_WAY' && isDriving) {
+        setIsDriving(false);
+      }
+    }
+  }, [shipments, isDriving]); 
 
   return (
     <div>
       <Navbar />
-      <h1>My bookings for {email}</h1>
+      <h1>My bookings for {isDriving}</h1>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "20px" }}>
         {shipments.length > 0 ? (
           <>
             <div>
               <h2>Booking Details</h2>
+              <p><strong>Shipment ID:</strong> {shipments[0].shipmentId}</p>
               <p><strong>Pickup Location:</strong> {shipments[0].pickupLabel}</p>
               <p><strong>Destination:</strong> {shipments[0].destinationLabel}</p>
               <p><strong>Driver's Email:</strong> {shipments[0].driver_email}</p>
               <p><strong>Price:</strong> ${shipments[0].price}</p>
               <p><strong>Shipment's Status:</strong> {shipments[0].status}</p>
+
+              {/* <button onClick={handleStart} style={{ marginTop: '20px', background: '#ccc' }}>Start</button>
+              <button onClick={handleEnd} style={{ marginTop: '20px', background: '#ccc' }}>End</button> */}
   
               {/* Display Distance and Duration */}
               {distance && duration && (

@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
-import io from "socket.io-client";
 import Mybookings from './Mybookings';
 
-const socket = io("http://localhost:3000");
-
-const Driver = ({onSendMessage}) => {
+const Driver = () => {
   const location = useLocation();
   const { email } = location.state || {};
 
@@ -22,30 +19,48 @@ const Driver = ({onSendMessage}) => {
       const response = await fetch(`http://localhost:7070/api/users/shipments?email=${email}`);
       const data = await response.json();
       setShipments(data);
-      //console.log(data[0]);
+      console.log(data[0]);
     } catch (error) {
       console.error("Error fetching shipment details:", error);
     }
   };
 
-  const handleStart = () => {
-    socket.emit(
-      "Start", 
-      { driver_email: shipments[0].driver_email }, 
-      (response) => {
-        // This callback runs when the server acknowledges the event
-        if (response.success) {
-          alert("Shipment started! Server confirmed.");
-        } else {
-          alert(`Failed to start shipment: ${response.error}`);
-        }
+  const handleStart = async () => {
+    try {
+      const response = await fetch(`http://localhost:7070/api/users/shipments/start?shipmentId=${shipments[0].shipmentId}`, {
+        method: "GET",
+      });
+  
+      if (response.ok) {
+        alert("Shipment started successfully!");
+        // Optionally, refetch shipments to update the status on the front end
+        //fetchShipmentDetails();
+      } else {
+        alert("Failed to start shipment.");
       }
-    );
+    } catch (error) {
+      console.error("Error starting the shipment:", error);
+      alert("Error starting the shipment.");
+    }
   };
 
-  const handleEnd = () => {
-    socket.emit("End", { driver_email: shipments[0].driver_email });
-    alert("Shipment completed!");
+  const handleEnd = async () => {
+    try {
+      const response = await fetch(`http://localhost:7070/api/users/shipments/end?shipmentId=${shipments[0].shipmentId}`, {
+        method: "GET",
+      });
+  
+      if (response.ok) {
+        alert("Shipment ended successfully!");
+        // Optionally, refetch shipments to update the status on the front end
+        //fetchShipmentDetails();
+      } else {
+        alert("Failed to end shipment.");
+      }
+    } catch (error) {
+      console.error("Error ending the shipment:", error);
+      alert("Error ending the shipment.");
+    }
   };
 
   return (
@@ -56,6 +71,7 @@ const Driver = ({onSendMessage}) => {
           {shipments.length > 0 ? (
             <div style={{ marginBottom: "20px" }}>
               <h3>Shipment Details</h3>
+              <p><strong>Shipment ID:</strong> {shipments[0].shipmentId}</p>
               <p><strong>Origin:</strong> {shipments[0].pickupLabel}</p>
               <p><strong>Destination:</strong> {shipments[0].destinationLabel}</p>
               <p><strong>Customer's Email:</strong> {shipments[0].customer_email}</p>
