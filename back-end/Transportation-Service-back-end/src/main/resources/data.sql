@@ -1,6 +1,12 @@
 -- Insert the manager
 
-INSERT IGNORE INTO user (email, name, password, user_role) VALUES ('m.m@gmail.com', 'manager_name', 'm', 'MANAGER');
+INSERT INTO user (id, name, email, password, user_role)
+SELECT 1, 'manager_name', 'm.m@gmail.com', 'm', 'MANAGER'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM user
+    WHERE email = 'm.m@gmail.com'
+);
 
 -- Insert some vehicles
 
@@ -87,11 +93,11 @@ WHERE NOT EXISTS (
 -- Insert some drivers
 
 INSERT INTO user (id, name, email, password, user_role)
-SELECT 2, 'driver1', 'driver1.d@gmail.com', 'd1', 'DRIVER'
+SELECT 2, 'driver2', 'driver2.d@gmail.com', 'd2', 'DRIVER'
 WHERE NOT EXISTS (
     SELECT 1
     FROM user
-    WHERE email = 'driver1.d@gmail.com'
+    WHERE email = 'driver2.d@gmail.com'
 );
 
 INSERT INTO driver (id, address, available_driver, position_latitude, position_longitude, vehicle_id)
@@ -103,11 +109,11 @@ WHERE NOT EXISTS (
 );
 --
 INSERT INTO user (id, name, email, password, user_role)
-SELECT 3, 'driver2', 'driver2.d@gmail.com', 'd2', 'DRIVER'
+SELECT 3, 'driver3', 'driver3.d@gmail.com', 'd3', 'DRIVER'
 WHERE NOT EXISTS (
     SELECT 1
     FROM user
-    WHERE email = 'driver2.d@gmail.com'
+    WHERE email = 'driver3.d@gmail.com'
 );
 
 INSERT INTO driver (id, address, available_driver, position_latitude, position_longitude, vehicle_id)
@@ -119,11 +125,11 @@ WHERE NOT EXISTS (
 );
 --
 INSERT INTO user (id, name, email, password, user_role)
-SELECT 4, 'driver3', 'driver3.d@gmail.com', 'd3', 'DRIVER'
+SELECT 4, 'driver4', 'driver4.d@gmail.com', 'd4', 'DRIVER'
 WHERE NOT EXISTS (
     SELECT 1
     FROM user
-    WHERE email = 'driver3.d@gmail.com'
+    WHERE email = 'driver4.d@gmail.com'
 );
 
 INSERT INTO driver (id, address, available_driver, position_latitude, position_longitude, vehicle_id)
@@ -135,11 +141,11 @@ WHERE NOT EXISTS (
 );
 --
 INSERT INTO user (id, name, email, password, user_role)
-SELECT 5, 'driver4', 'driver4.d@gmail.com', 'd4', 'DRIVER'
+SELECT 5, 'driver5', 'driver5.d@gmail.com', 'd5', 'DRIVER'
 WHERE NOT EXISTS (
     SELECT 1
     FROM user
-    WHERE email = 'driver4.d@gmail.com'
+    WHERE email = 'driver5.d@gmail.com'
 );
 
 INSERT INTO driver (id, address, available_driver, position_latitude, position_longitude, vehicle_id)
@@ -151,11 +157,11 @@ WHERE NOT EXISTS (
 );
 --
 INSERT INTO user (id, name, email, password, user_role)
-SELECT 6, 'driver5', 'driver5.d@gmail.com', 'd5', 'DRIVER'
+SELECT 6, 'driver6', 'driver6.d@gmail.com', 'd6', 'DRIVER'
 WHERE NOT EXISTS (
     SELECT 1
     FROM user
-    WHERE email = 'driver5.d@gmail.com'
+    WHERE email = 'driver6.d@gmail.com'
 );
 
 INSERT INTO driver (id, address, available_driver, position_latitude, position_longitude, vehicle_id)
@@ -167,11 +173,11 @@ WHERE NOT EXISTS (
 );
 --
 INSERT INTO user (id, name, email, password, user_role)
-SELECT 7, 'driver6', 'driver6.d@gmail.com', 'd6', 'DRIVER'
+SELECT 7, 'driver7', 'driver7.d@gmail.com', 'd7', 'DRIVER'
 WHERE NOT EXISTS (
     SELECT 1
     FROM user
-    WHERE email = 'driver6.d@gmail.com'
+    WHERE email = 'driver7.d@gmail.com'
 );
 
 INSERT INTO driver (id, address, available_driver, position_latitude, position_longitude, vehicle_id)

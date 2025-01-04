@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.awesome-markers";
 import L from "leaflet";
@@ -29,6 +29,7 @@ const Mybookings = () => {
   const [duration, setDuration] = useState(null);
   const [driverPosition, setDriverPosition] = useState(null);
   const [isDriving, setIsDriving] = useState(false);
+  const [currentRouteIndex, setCurrentRouteIndex] = useState(0);
 
   const calculateRoute = useCallback(async () => {
     const pickupCoords = `${shipments[0].pickupLon},${shipments[0].pickupLat}`;
@@ -44,26 +45,18 @@ const Mybookings = () => {
       setRoute(routeData.geometry.coordinates.map(([lon, lat]) => [lat, lon]));
       setDistance((routeData.distance / 1000).toFixed(2));
       setDuration((routeData.duration / 60).toFixed(2));
-      setDriverPosition([shipments[0].pickupLat, shipments[0].pickupLon]); // Set initial driver position
     }
   }, [shipments]);
-
-  // const handleStart = () => {
-  //   setIsDriving(true);
-  // };
-
-  // const handleEnd = () => {
-  //   setIsDriving(false);
-  // };
 
   useEffect(() => {
     const fetchShipments = async () => {
       try {
         const response = await fetch(`http://localhost:7070/api/users/shipments?email=${email}`);
         const data = await response.json();
-        setShipments(data);
+        const nonDeliveredShipments = data.filter(shipment => shipment.status !== 'DELIVERED');
+        setShipments(nonDeliveredShipments);
         //console.log(data[0]);
-        if (data.length > 0 && data[0].status === 'ON_THE_WAY') {
+        if (nonDeliveredShipments.length > 0 && nonDeliveredShipments[0].status === 'ON_THE_WAY') {
           setIsDriving(true);
         }
       } catch (error) {
@@ -82,10 +75,25 @@ const Mybookings = () => {
     }
   }, [shipments]);
 
-  useEffect(() => { // triggers whenever isDriving, route or duration changes
+  useEffect(() => {
+    const fetchCurrentRouteIndex = async () => {
+      try {
+        const response = await fetch(`http://localhost:7070/api/users/shipments/index?shipmentId=${shipments[0].shipmentId}`);
+        const data = await response.json();
+        const { index } = data;
+        setCurrentRouteIndex(index);
+      } catch (error) {
+        console.error("Error fetching the index:", error);
+      }
+    };
+    
+    if(email && shipments.length>0) {
+      fetchCurrentRouteIndex();
+    }
+
     if (isDriving && route) {
-      let currentIndex = 0;
- 
+      let currentIndex = currentRouteIndex;
+
       const interval = setInterval(() => {
         if (currentIndex < route.length) {
           setDriverPosition(route[currentIndex]);
@@ -99,75 +107,86 @@ const Mybookings = () => {
       return () => clearInterval(interval);
     }
   }, [isDriving, route, duration]);
-
-  // Optionally, if you want to update `isDriving` based on any status change after fetching:
-  useEffect(() => {
-    if (shipments.length > 0) {
-      const status = shipments[0].status;
-      if (status === 'ON_THE_WAY' && !isDriving) {
-        setIsDriving(true);
-      } else if (status !== 'ON_THE_WAY' && isDriving) {
-        setIsDriving(false);
+  
+  // dynamically set the map view on the current driver position
+  const SetViewOnDriverPosition = ({ driverPosition }) => {
+    const map = useMap();
+ 
+    useEffect(() => {
+      if (driverPosition) {
+        map.setView(driverPosition, map.getZoom());
       }
-    }
-  }, [shipments, isDriving]); 
+    }, [driverPosition, map]);
+  
+    return null;
+  };
 
   return (
     <div>
       <Navbar />
-      <h1>My bookings for {isDriving}</h1>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "20px" }}>
-        {shipments.length > 0 ? (
-          <>
-            <div>
-              <h2>Booking Details</h2>
-              <p><strong>Shipment ID:</strong> {shipments[0].shipmentId}</p>
-              <p><strong>Pickup Location:</strong> {shipments[0].pickupLabel}</p>
-              <p><strong>Destination:</strong> {shipments[0].destinationLabel}</p>
-              <p><strong>Driver's Email:</strong> {shipments[0].driver_email}</p>
-              <p><strong>Price:</strong> ${shipments[0].price}</p>
-              <p><strong>Shipment's Status:</strong> {shipments[0].status}</p>
-
-              {/* <button onClick={handleStart} style={{ marginTop: '20px', background: '#ccc' }}>Start</button>
-              <button onClick={handleEnd} style={{ marginTop: '20px', background: '#ccc' }}>End</button> */}
+      <h1>My bookings</h1>
+      {shipments.length > 0 ? (
+        shipments.filter(shipment => shipment.status !== "DELIVERED").length > 0 ? (
+          shipments
+            .filter(shipment => shipment.status !== "DELIVERED")
+            .map((shipment, index) => (
+              <div key={index} style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
+                {/* Left Section: Booking Details */}
+                <div style={{ flex: 1 }}>
+                  <h2>Booking Details</h2>
+                  <p><strong>Shipment ID:</strong> {shipment.shipmentId}</p>
+                  <p><strong>Pickup Location:</strong> {shipment.pickupLabel}</p>
+                  <p><strong>Destination:</strong> {shipment.destinationLabel}</p>
+                  <p><strong>Driver's Email:</strong> {shipment.driver_email}</p>
+                  <p><strong>Price:</strong> ${shipment.price}</p>
+                  <p><strong>Shipment's Status:</strong> {shipment.status}</p>
   
-              {/* Display Distance and Duration */}
-              {distance && duration && (
-                <div style={{ marginTop: "10px" }}>
-                  <p><strong>Distance:</strong> {distance} km</p>
-                  <p><strong>Duration:</strong> {duration} minutes</p>
+                  {/* Display Distance and Duration */}
+                  {distance && duration && (
+                    <div style={{ marginTop: "10px" }}>
+                      <p><strong>Distance:</strong> {distance} km</p>
+                      <p><strong>Duration:</strong> {duration} minutes</p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
   
-            {/* Map Section */}
-            <MapContainer
-              center={[shipments[0].pickupLat, shipments[0].pickupLon]}
-              zoom={14}
-              style={{ height: "500px", width: "100%" }}
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
+                {/* Right Section: Map */}
+                <div style={{ flex: 2 }}>
+                  <MapContainer
+                    center={[shipment.pickupLat, shipment.pickupLon]}
+                    zoom={14}
+                    style={{ height: "400px", width: "100%" }}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
   
-              {/* Route Polyline */}
-              {route && <Polyline positions={route} color="blue" />}
+                    {/* Route Polyline */}
+                    {route && <Polyline positions={route} color="blue" />}
   
-              {/* Driver Position Marker */}
-              {driverPosition && (
-                <Marker position={driverPosition} icon={customDivIcon}>
-                  <Popup>Driver's Current Position</Popup>
-                </Marker>
-              )}
-            </MapContainer>
-          </>
+                    {/* Driver Position Marker */}
+                    {driverPosition && (
+                      <Marker position={driverPosition} icon={customDivIcon}>
+                        <Popup>Driver's Current Position</Popup>
+                      </Marker>
+                    )}
+  
+                    <SetViewOnDriverPosition driverPosition={driverPosition} />
+                  </MapContainer>
+                </div>
+              </div>
+            ))
         ) : (
           <p style={{ textAlign: "center", marginTop: "20px", fontSize: "18px", color: "gray" }}>
-            There are no bookings yet.
+            There are no shipments yet.
           </p>
-        )}
-      </div>
+        )
+      ) : (
+        <p style={{ textAlign: "center", marginTop: "20px", fontSize: "18px", color: "gray" }}>
+          There are no bookings yet.
+        </p>
+      )}
     </div>
   );
 };

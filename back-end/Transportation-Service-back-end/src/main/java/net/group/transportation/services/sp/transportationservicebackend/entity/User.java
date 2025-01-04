@@ -36,7 +36,7 @@ public class User {
     // @Column(name = "emailVerified", nullable = false)
     // private boolean emailVerified;
     @Email
-    @Column(name = "email", updatable = true, nullable = false, unique = true)
+    @Column(name = "email", updatable = true, nullable = false, unique = false)
     private String email;
     // @Column(name = "phoneNumber", nullable = true, updatable = true, unique = true)
     // private String phoneNumber;

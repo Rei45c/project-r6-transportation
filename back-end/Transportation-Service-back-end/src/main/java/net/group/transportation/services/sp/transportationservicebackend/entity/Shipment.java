@@ -51,6 +51,6 @@ public class Shipment {
     private String destinationLabel;
     @Column(name = "price", nullable = false, updatable = true)
     private Double price;
-    
-
+    @Column(name = "currentRouteIndex", nullable = false, updatable = true)
+    private Integer currentRouteIndex;
 }

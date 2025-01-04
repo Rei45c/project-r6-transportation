@@ -4,6 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpMethod;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import net.group.transportation.services.sp.transportationservicebackend.repositories.UserRepository;
 import net.group.transportation.services.sp.transportationservicebackend.repositories.DriverRepository;
@@ -16,6 +20,7 @@ import net.group.transportation.services.sp.transportationservicebackend.entity.
 import net.group.transportation.services.sp.transportationservicebackend.dto.DriverDTO;
 import net.group.transportation.services.sp.transportationservicebackend.enums.userRole;
 import net.group.transportation.services.sp.transportationservicebackend.enums.shipmentStatus;
+
 
 import java.util.Optional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -31,6 +36,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
+import java.util.concurrent.ConcurrentHashMap; 
+
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -45,10 +52,12 @@ public class UserController {
     @Autowired
     private ShipmentRepository shipmentRepository;
 
+    private final Map<Long, Boolean> shipmentThreadsRunning = new ConcurrentHashMap<>();
+
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody User user) {
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email already exists");
+            return ResponseEntity.ok("Email already exists");
         }
         userRepository.save(user);
         return ResponseEntity.ok("User registered successfully");
@@ -70,7 +79,7 @@ public class UserController {
         driver.setCurrentPositionLatitude(driverDTO.getPositionLatitude());
         driver.setAddress(driverDTO.getAddress());
         driver.setAvailable(driverDTO.getAvailable());
-        System.out.println("\n\n name:" +driver.getName() +"address:"+driver.getAddress()+"avail:"+driver.getAvailable()+" \n\n");
+        //System.out.println("\n\n name:" +driver.getName() +"address:"+driver.getAddress()+"avail:"+driver.getAvailable()+" \n\n");
 
         driverRepository.save(driver);
 
@@ -242,6 +251,7 @@ public class UserController {
             shipment.setPickupLabel(pickupLabel);
             shipment.setDestinationLabel(destinationLabel);
             shipment.setPrice(price);
+            shipment.setCurrentRouteIndex(0);
 
             shipmentRepository.save(shipment);
 
@@ -260,7 +270,7 @@ public class UserController {
     public ResponseEntity<?> getShipmentsByCustomerEmail(@RequestParam String email) {
         try {
             User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+                    .orElseThrow(() -> new RuntimeException("Customer not found with email: " + email));
 
             List<Shipment> shipments = null;
             if (user.getRole() == userRole.CUSTOMER) // * shipment to 1 customer (for Mybookings component)
@@ -270,7 +280,9 @@ public class UserController {
 
             List<Map<String, Object>> response = null;
 
-            response = shipments.stream().map(shipment -> {
+            response = shipments.stream()
+                                //.filter(shipment -> shipment.getShipmentStatus() != shipmentStatus.DELIVERED)
+                                .map(shipment -> {
                 Map<String, Object> shipmentData = new HashMap<>();
                 shipmentData.put("shipmentId", shipment.getId());
                 shipmentData.put("pickupLabel", shipment.getPickupLabel());
@@ -304,7 +316,53 @@ public class UserController {
                 Shipment shipment = optional_shipment.get();
                 shipment.setShipmentStatus(shipmentStatus.ON_THE_WAY);
 
-                shipmentRepository.save(shipment);
+                double pickupLat = shipment.getPickupLat();
+                double pickupLon = shipment.getPickupLon();
+                double destinationLat = shipment.getDestinationLat();
+                double destinationLon = shipment.getDestinationLon();
+
+                // fetch the route from OSRM API
+                String routeUrl = String.format("https://router.project-osrm.org/route/v1/driving/%f,%f;%f,%f?overview=full&geometries=geojson",
+                        pickupLon, pickupLat, destinationLon, destinationLat);
+
+                RestTemplate restTemplate = new RestTemplate();
+                ResponseEntity<String> response = restTemplate.exchange(routeUrl, HttpMethod.GET, null, String.class);
+
+                String responseData = response.getBody();
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode rootNode = objectMapper.readTree(responseData);
+
+                JsonNode routes = rootNode.get("routes");
+                if (routes == null || !routes.isArray() || routes.size() == 0) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No routes found in the response!");
+                }
+                JsonNode geometry = routes.get(0).get("geometry").get("coordinates");
+                double distance = routes.get(0).get("distance").asDouble() / 1000;
+                final double duration = Math.round(routes.get(0).get("duration").asDouble() / 60 * 100.0) / 100.0; 
+                distance = Math.round(distance * 100.0) / 100.0;
+                List<List<Double>> coordinates = objectMapper.convertValue(geometry, List.class);
+
+                shipmentThreadsRunning.put(shipmentId, true);
+                new Thread(() -> {
+                    try {
+                        for (int i = 0; i < coordinates.size(); i++) {
+                            if (!shipmentThreadsRunning.getOrDefault(shipmentId, false)) { // stop the thread if the flag is false  
+                                break;
+                            }
+                            shipment.setCurrentRouteIndex(i);
+                            shipmentRepository.save(shipment);
+
+                            long sleepDuration = (long) ((duration * 60 * 1000) / coordinates.size());
+                            Thread.sleep(sleepDuration); // total duration in ms / number of route points
+                        }
+
+                        endShipmentLogic(shipmentId);
+                    } catch (Exception e) {
+                        System.err.println("Error progressing route: " + e.getMessage());
+                    } finally {
+                        shipmentThreadsRunning.remove(shipmentId); // clean up the flag
+                    }
+                }).start();
 
                 return ResponseEntity.ok("Shipment started successfully!");
             } else {
@@ -317,74 +375,82 @@ public class UserController {
         }
     }
 
-    @GetMapping("/shipments/end")
-    public ResponseEntity<?> endShipment(@RequestParam Long shipmentId) {
+    @GetMapping("/shipments/index")
+    public ResponseEntity<?> indexOfShipment(@RequestParam Long shipmentId) {
         try {
             Optional<Shipment> optional_shipment = shipmentRepository.findById(shipmentId);
 
             if (optional_shipment.isPresent()) {
                 Shipment shipment = optional_shipment.get();
-                shipment.setShipmentStatus(shipmentStatus.DELIVERED);
+                int index = shipment.getCurrentRouteIndex();
 
-                shipmentRepository.save(shipment);
+                Map<String, Integer> response = new HashMap<>();
+                response.put("index", index);
 
-                return ResponseEntity.ok("Shipment ended successfully!");
+                return ResponseEntity.ok(response);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("Shipment not found!");
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error with ending the shipment: " + e.getMessage());
+                    .body("Error with extracting the route index from the shipment: " + e.getMessage());
         }
     }
 
-    // @GetMapping("/shipments/calculateRoute")
-    // public ResponseEntity<?> calculateRoute(@RequestParam Long shipmentId) {
-    //     try {
-    //         Optional<Shipment> optionalShipment = shipmentRepository.findById(shipmentId);
+    private void endShipmentLogic(Long shipmentId) {
+        try {
+            Optional<Shipment> optional_shipment = shipmentRepository.findById(shipmentId);
 
-    //         if (!optionalShipment.isPresent()) {
-    //             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Shipment not found!");
-    //         }
+            if (optional_shipment.isPresent()) {
+                Shipment shipment = optional_shipment.get();
 
-    //         Shipment shipment = optionalShipment.get();
+                // Signal the thread to stop
+                shipmentThreadsRunning.put(shipmentId, false);
+                
+                String email_driver = shipment.getDriver().getEmail();
+                double pickupLat = shipment.getPickupLat();
+                double pickupLon = shipment.getPickupLon();
+                double destinationLat = shipment.getDestinationLat();
+                double destinationLon = shipment.getDestinationLon();
+                String pickupLabel = shipment.getPickupLabel();
+                String destinationLabel = shipment.getDestinationLabel();
 
-    //         double pickupLat = shipment.getPickupLat();
-    //         double pickupLon = shipment.getPickupLon();
-    //         double destinationLat = shipment.getDestinationLat();
-    //         double destinationLon = shipment.getDestinationLon();
+                shipment.setShipmentStatus(shipmentStatus.DELIVERED);
+                shipmentRepository.save(shipment);
 
-    //         // fetch the route from OSRM API
-    //         String routeUrl = String.format("https://router.project-osrm.org/route/v1/driving/%f,%f;%f,%f?overview=full&geometries=geojson",
-    //                 pickupLon, pickupLat, destinationLon, destinationLat);
+                Driver driver = driverRepository.findByEmail(email_driver);
+                long vehicle_id = driver.getVehicle().getId();
+                driver.setAvailable(1);
+                driver.setVehicle(null);
+                driver.setCurrentPositionLongitude(destinationLon);
+                driver.setCurrentPositionLatitude(destinationLat);
+                driver.setAddress(destinationLabel);
+                driverRepository.save(driver);
 
-    //         RestTemplate restTemplate = new RestTemplate();
-    //         ResponseEntity<String> response = restTemplate.exchange(routeUrl, HttpMethod.GET, null, String.class);
+                Optional<Vehicle> optional_vehicle = vehicleRepository.findById(vehicle_id);
+                Vehicle vehicle = optional_vehicle.get();
+                vehicle.setCurrentPositionLongitude(destinationLon);
+                vehicle.setCurrentPositionLatitude(destinationLat);
+                vehicle.setAddress(destinationLabel);
+                vehicle.setAvailable(1);
+                vehicleRepository.save(vehicle);
+            }
+        } catch (Exception e) {
+            System.err.println("Error with ending the shipment: " + e.getMessage());
+        }
+    }
 
-    //         // Parse response data to extract route information (this depends on the API's response format)
-    //         String routeData = response.getBody(); // Parse this according to the specific API response
-
-    //         // Optionally, update the driver's current position based on the route data
-    //         // For simplicity, let's say we set the first point of the route as the current position
-    //         // This logic can be refined based on actual route data
-
-    //         // Update current position
-    //         double currentPosLat = pickupLat; // Assuming the initial position is pickup location
-    //         double currentPosLon = pickupLon;
-
-    //         shipment.setCurrentPosLat(currentPosLat);
-    //         shipment.setCurrentPosLon(currentPosLon);
-    //         shipmentRepository.save(shipment);
-
-    //         // Return the route and updated shipment status
-    //         return ResponseEntity.ok(routeData); // Respond with the route details
-
-    //     } catch (Exception e) {
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-    //                 .body("Error calculating route: " + e.getMessage());
-    //     }
-    // }
+    @GetMapping("/shipments/end")
+    public ResponseEntity<?> endShipment(@RequestParam Long shipmentId) {
+        try {
+            endShipmentLogic(shipmentId);
+            return ResponseEntity.ok("Shipment ended successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error with ending the shipment: " + e.getMessage());
+        }
+    }
 
     // (not used here) calculates the exact airline distance, using Haversine formula
     private double calculateDistance_haversine(double lat1, double lon1, double lat2, double lon2) {
@@ -437,7 +503,7 @@ public class UserController {
     private double calculateCost(double distance, double weight, double volume) {
         double baseRate = 0.7; // base rate per km
         double weightRate = 0.05; // weight rate per kg
-        double volumeRate = 40; // volume rate per cubic m
+        double volumeRate = 20; // volume rate per cubic m
         return (baseRate * distance) + (weightRate * weight) + (volumeRate * volume);
     }
 
