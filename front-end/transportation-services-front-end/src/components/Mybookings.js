@@ -31,7 +31,7 @@ const Mybookings = () => {
   const [isDriving, setIsDriving] = useState(false);
   const [currentRouteIndex, setCurrentRouteIndex] = useState(0);
 
-  const calculateRoute = useCallback(async () => {
+  const calculateRoute = useCallback(async () => { // with useCallBack the function is memoized and will not change on re-renders
     const pickupCoords = `${shipments[0].pickupLon},${shipments[0].pickupLat}`;
     const destinationCoords = `${shipments[0].destinationLon},${shipments[0].destinationLat}`;
   
@@ -51,11 +51,10 @@ const Mybookings = () => {
   useEffect(() => {
     const fetchShipments = async () => {
       try {
-        const response = await fetch(`http://localhost:7070/api/users/shipments?email=${email}`);
+        const response = await fetch(`http://localhost:7070/api/shipment/shipments?email=${email}`);
         const data = await response.json();
         const nonDeliveredShipments = data.filter(shipment => shipment.status !== 'DELIVERED');
         setShipments(nonDeliveredShipments);
-        //console.log(data[0]);
         if (nonDeliveredShipments.length > 0 && nonDeliveredShipments[0].status === 'ON_THE_WAY') {
           setIsDriving(true);
         }
@@ -78,7 +77,7 @@ const Mybookings = () => {
   useEffect(() => {
     const fetchCurrentRouteIndex = async () => {
       try {
-        const response = await fetch(`http://localhost:7070/api/users/shipments/index?shipmentId=${shipments[0].shipmentId}`);
+        const response = await fetch(`http://localhost:7070/api/shipment/shipments/index?shipmentId=${shipments[0].shipmentId}`);
         const data = await response.json();
         const { index } = data;
         setCurrentRouteIndex(index);

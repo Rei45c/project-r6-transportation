@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Login from "./Login";
 import Signup from "./Signup";
-import Navbar from './Navbar';
 import Offer from './Offer';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import Homepage from './Homepage';

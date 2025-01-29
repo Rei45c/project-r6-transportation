@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
-import Mybookings from './Mybookings';
 
 const Driver = () => {
   const location = useLocation();
@@ -16,7 +15,7 @@ const Driver = () => {
 
   const fetchShipmentDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:7070/api/users/shipments?email=${email}`);
+      const response = await fetch(`http://localhost:7070/api/shipment/shipments?email=${email}`);
       const data = await response.json();
       setShipments(data);
     } catch (error) {
@@ -26,7 +25,7 @@ const Driver = () => {
 
   const handleStart = async () => {
     try {
-      const response = await fetch(`http://localhost:7070/api/users/shipments/start?shipmentId=${shipments[0].shipmentId}`, {
+      const response = await fetch(`http://localhost:7070/api/shipment/shipments/start?shipmentId=${shipments[0].shipmentId}`, {
         method: "GET",
       });
   
@@ -43,7 +42,7 @@ const Driver = () => {
 
   const handleEnd = async () => {
     try {
-      const response = await fetch(`http://localhost:7070/api/users/shipments/end?shipmentId=${shipments[0].shipmentId}`, {
+      const response = await fetch(`http://localhost:7070/api/shipment/shipments/end?shipmentId=${shipments[0].shipmentId}`, {
         method: "GET",
       });
   

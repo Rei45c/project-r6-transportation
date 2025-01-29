@@ -80,10 +80,10 @@ const Homepage = () => {
       <section id="services_and_benefits" className="section">
         <h2>Services and benefits</h2>
         <ul>
-          <li>Custom Web Development</li>
-          <li>Mobile App Development</li>
-          <li>Cloud Computing Solutions</li>
-          <li>Technical Support</li>
+          <li>Transportation at low cost</li>
+          <li>Transport in all places in Austria</li>
+          <li>Fast delivery</li>
+          <li>Easy booking</li>
         </ul>
       </section>
 

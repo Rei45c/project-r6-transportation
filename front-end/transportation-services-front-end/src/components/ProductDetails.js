@@ -26,7 +26,7 @@ const ProductDetails = () => {
         height: parseFloat(height),
       },
     };
-    //console.log(requestData);
+
     try {
       const response = await fetch("http://localhost:7070/api/users/offer", {
         method: 'POST',
