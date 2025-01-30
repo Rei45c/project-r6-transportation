@@ -42,23 +42,6 @@
     transform: rotate(360deg);
   }
 }
-/* ------ login signup*/
-/* body {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-} */
-
-/* .title {
-  text-align: center;
-  width: 30vw;
-  background-color: rgb(190, 164, 214);
-  padding: 2vw 1vw;
-  border-radius: 10px 10px 0 0;
-  font-size: 2rem;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-} */
 
 nav {
   margin-bottom: 20px;

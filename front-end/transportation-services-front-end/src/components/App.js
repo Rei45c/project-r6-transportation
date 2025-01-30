@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import Login from "./Login";
 import Signup from "./Signup";
 import Offer from './Offer';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import Homepage from './Homepage';
 import ProductDetails from './ProductDetails';
-import '../App.css';
 import Manager from './Manager';
 import Mybookings from './Mybookings';
 import Driver from './Driver';
+import '../App.css';
 
 function App() {
 

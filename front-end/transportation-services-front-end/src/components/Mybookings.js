@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.awesome-markers";
 import L from "leaflet";
 import Navbar from './Navbar';
-import { useCallback } from "react";
 
 const customDivIcon = L.divIcon({
     html: `<div style="
