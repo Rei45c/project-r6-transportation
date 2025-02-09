@@ -7,14 +7,8 @@ import lombok.*;
 @Setter
 public class DriverDTO {
 
-    //private Long id;
     private String email;
     private String name;
-    //private String insuranceNumber;
-    //private String phoneNumber;
-    //private Vehicle vehicle;
-    //private boolean available;
-    //private Long driverIdNumber;
     private String password;
     private String address;
     private Double positionLongitude;

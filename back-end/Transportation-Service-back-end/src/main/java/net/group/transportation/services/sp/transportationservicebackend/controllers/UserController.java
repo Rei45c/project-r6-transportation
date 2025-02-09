@@ -21,7 +21,6 @@ import net.group.transportation.services.sp.transportationservicebackend.dto.Dri
 import net.group.transportation.services.sp.transportationservicebackend.enums.userRole;
 import net.group.transportation.services.sp.transportationservicebackend.enums.shipmentStatus;
 
-
 import java.util.Optional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.http.HttpStatus;

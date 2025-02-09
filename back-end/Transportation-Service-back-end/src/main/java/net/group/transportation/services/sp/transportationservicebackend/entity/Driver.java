@@ -17,20 +17,8 @@ import lombok.experimental.SuperBuilder;
 @PrimaryKeyJoinColumn(name = "id") // Links `Driver` to the `User` table
 public class Driver extends User{
 
-    //@Id
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
-    //private Long id;
-    //@Column(name = "driverNumber", nullable = false, updatable = false, unique = true)
-    //private Long driverIdNumber;
     @Column(name = "availableDriver", nullable = false, updatable=true)
     private int available;
-    //@Column(name = "insuranceNumber", nullable = false, updatable = false)
-    //private String insuranceNumber;
-    //@Email
-    //@Column(name = "email", nullable = false, updatable = true, unique = true)
-    //private String email;
-    //@Column(name = "phoneNumber", nullable = false, updatable = true, unique = true)
-    //private String phoneNumber;
     @OneToOne
     @JoinColumn(name = "vehicle_id", referencedColumnName = "id", nullable = true, unique = true)
     Vehicle vehicle;
